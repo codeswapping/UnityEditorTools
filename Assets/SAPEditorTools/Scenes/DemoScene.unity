@@ -168,6 +168,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 0
+  allIndexes: 010000000300000005000000
+  JumpSpeed: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
