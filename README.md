@@ -16,3 +16,5 @@ To make dictionary serializable in inspector window you can do it like this
 
 I hope this will help you.
 
+Note: I am still working on this project and I can't garrenty any loss through using this tool. Please use only on your own concern. It is still not perfect. I would suggest first try it on empty project and then use it for any other project.
+
