@@ -6,215 +6,254 @@ using UnityEditor;
 [CustomEditor(typeof(SerializableMonoBehaviour), true)]
 public class SerializableDictionaryEditor : Editor
 {
-	bool isShowing = true;
-	public override void OnInspectorGUI()
-	{
-		Debug.Log("Checking editor");
-		serializedObject.Update();
-		EditorGUI.BeginChangeCheck();
-		var serialized = serializedObject.GetIterator();
-		if (serialized.NextVisible(true))
-		{
-			do
-			{
-				if (serialized.propertyType == SerializedPropertyType.Generic)
-				{
-					if (serialized.type.Contains("SerializableDictionary"))
-					{
-						EditorGUILayout.BeginHorizontal();
+    bool isShowing = true;
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+        EditorGUI.BeginChangeCheck();
+        var serialized = serializedObject.GetIterator();
+        if (serialized.NextVisible(true))
+        {
+            do
+            {
+                if (serialized.propertyType == SerializedPropertyType.Generic)
+                {
+                    //Check if serialized property is of SerializableDictionary type of not. Note: I did not find any other proper way to check what serialized
+                    //property type is so I just compare it with string value. I need to find better way to achieve this.
+                    if (serialized.type.Contains("SerializableDictionary"))
+                    {
+                        EditorGUILayout.BeginHorizontal();
 
-						isShowing = EditorGUILayout.Foldout(isShowing, serialized.name, true);
-						GUILayout.Space(5);
-						var style = new GUIContent("+", "Add new item in the dictionary");
-						var keys = serialized.FindPropertyRelative("keys");
-						var values = serialized.FindPropertyRelative("values");
-						var keyElementType = keys.arrayElementType;
-						var valueElementType = values.arrayElementType;
+                        //Create foldout group
+                        isShowing = EditorGUILayout.Foldout(isShowing, GetNameFormatted(serialized.name), true);
+                        GUILayout.Space(5);
+                        var style = new GUIContent("+", "Add new item in the dictionary");
+                        var keys = serialized.FindPropertyRelative("keys");
+                        var values = serialized.FindPropertyRelative("values");
+                        //If keys or values are not an serializable then we can't show it in inspector, so we will simply show a message to user.
+                        if (keys == null || values == null)
+                        {
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUILayout.LabelField("No serialized key or property found. Please make sure any custom class is marked as serialized or not.");
+                            continue;
+                        }
+                        //Get key and values element type.
+                        var keyElementType = keys.arrayElementType;
+                        var valueElementType = values.arrayElementType;
 
-						EditorGUILayout.BeginHorizontal();
-						GUILayout.FlexibleSpace();
+                        GUILayout.FlexibleSpace();
 
-						EditorGUILayout.LabelField("Size", GUILayout.Height(20), GUILayout.Width(40), GUILayout.MaxWidth(40));
-						var size = EditorGUILayout.IntField(keys.arraySize, GUILayout.Width(40), GUILayout.MaxWidth(40));
-						if (GUILayout.Button(style, GUILayout.Width(20)))
-						{
-							if (keys.arraySize == 0)
-							{
-								keys.arraySize = 1;
-							}
-							else
-							{
-								keys.InsertArrayElementAtIndex(keys.arraySize - 1);
-								var key = keys.GetArrayElementAtIndex(keys.arraySize - 1);
-								for (int i = 0; i < keys.arraySize - 1; i++)
-								{
-									var k = keys.GetArrayElementAtIndex(i);
-									switch (key.propertyType)
-									{
-										case SerializedPropertyType.Integer:
-											if (k.intValue == key.intValue)
-											{
-												key.intValue = key.intValue + Random.Range(1, 5000);
-											}
-											break;
-										case SerializedPropertyType.Float:
-											if (k.floatValue == key.floatValue)
-											{
-												key.floatValue = key.floatValue + Random.Range(1, 5000);
-											}
-											break;
-										case SerializedPropertyType.String:
-											if (k.stringValue.Equals(key.stringValue))
-											{
-												key.stringValue = key.stringValue + Random.Range(1, 5000);
-											}
-											break;
-										default:
-											break;
-									}
-								}
-							}
-							values.arraySize = keys.arraySize;
-							size = keys.arraySize;
-						}
-						EditorGUILayout.EndHorizontal();
-						keys.arraySize = size;
-						values.arraySize = size;
-						for (int i = 0; i < keys.arraySize - 1; i++)
-						{
-							var key = keys.GetArrayElementAtIndex(i);
-							for (int j = 0; j < keys.arraySize; j++)
-							{
-								if (j == i)
-									continue;
-								var k = keys.GetArrayElementAtIndex(j);
-								switch (key.propertyType)
-								{
-									case SerializedPropertyType.Integer:
-										if (k.intValue == key.intValue)
-										{
-											key.intValue = key.intValue + Random.Range(1, 5000);
-										}
-										break;
-									case SerializedPropertyType.Float:
-										if (k.floatValue == key.floatValue)
-										{
-											key.floatValue = key.floatValue + Random.Range(1, 5000);
-										}
-										break;
-									case SerializedPropertyType.String:
-										if (k.stringValue.Equals(key.stringValue))
-										{
-											key.stringValue = key.stringValue + Random.Range(1, 5000);
-										}
-										break;
-									default:
-										break;
-								}
-							}
-						}
-						EditorGUILayout.EndHorizontal();
-						EditorGUILayout.Space(5);
-						if (isShowing)
-						{
-							//EditorGUI.indentLevel++;
-							values.arraySize = keys.arraySize;
-							if (keys.arraySize > 0)
-							{
-								for (int i = 0; i < keys.arraySize; i++)
-								{
-									var rect = GUILayoutUtility.GetLastRect();
-									rect.y += 5;
-									rect.x -= 2;
-									rect.width = EditorGUIUtility.currentViewWidth - 30;
-									rect.height = 1;
-									EditorGUI.DrawRect(rect, Color.green);
-									GUILayout.Space(5);
-									//var rect = new Rect(0, GUILayoutUtility.GetLastRect().y,0, 20);
-									EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 50));
-									var key = keys.GetArrayElementAtIndex(i);
-									var value = values.GetArrayElementAtIndex(i);
-									var width = ((EditorGUIUtility.currentViewWidth - 40) / 2f);
-									//rect.width = width * 2f;
-									//EditorGUI.DrawRect(rect,Color.cyan);
-									switch (key.propertyType)
-									{
-										case SerializedPropertyType.Integer:
-											EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
-											key.intValue = EditorGUILayout.IntField(key.intValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										case SerializedPropertyType.Float:
-											EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
-											key.floatValue = EditorGUILayout.FloatField(key.floatValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										case SerializedPropertyType.String:
-											EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
-											key.stringValue = EditorGUILayout.TextField(key.stringValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										default:
-											EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
-											EditorGUILayout.PropertyField(key, GUILayout.MaxWidth(width * 2 - 50));
-											break;
-									}
-									if (GUILayout.Button("X", GUILayout.Width(30), GUILayout.MaxWidth(20), GUILayout.Height(20)))
-									{
-										keys.DeleteArrayElementAtIndex(i);
-										values.DeleteArrayElementAtIndex(i);
-									}
-									EditorGUILayout.EndHorizontal();
-									EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 20));
-									switch (value.propertyType)
-									{
-										case SerializedPropertyType.Integer:
-											EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
-											value.intValue = EditorGUILayout.IntField(value.intValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										case SerializedPropertyType.Float:
-											EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
-											value.floatValue = EditorGUILayout.FloatField(value.floatValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										case SerializedPropertyType.String:
-											EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
-											value.stringValue = EditorGUILayout.TextField(value.stringValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
-											break;
-										default:
-											EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
-											EditorGUILayout.PropertyField(value, GUILayout.MaxWidth(width * 2 - 50));
-											break;
-									}
-									EditorGUILayout.EndHorizontal();
-									var rect1 = GUILayoutUtility.GetLastRect();
-									rect1.x -= 2;
-									rect1.width = 1;
-									rect1.height += rect1.y - rect.y + 6;
-									rect1.y = rect.y;
-									EditorGUI.DrawRect(rect1, Color.green);
-									rect1.x = EditorGUIUtility.currentViewWidth - 15;
-									EditorGUI.DrawRect(rect1, Color.green);
-									GUILayout.Space(10);
-									rect = GUILayoutUtility.GetLastRect();
-									rect.x -= 2;
-									rect.y += 5;
-									rect.width = EditorGUIUtility.currentViewWidth - 30;
-									rect.height = 1;
-									EditorGUI.DrawRect(rect, Color.green);
-								}
-							}
-							//EditorGUI.indentLevel--;
-						}
-					}
-				}
-				else
-				{
-					EditorGUILayout.PropertyField(serialized, true);
-				}
-			}
-			while (serialized.NextVisible(false));
-		}
-		serializedObject.ApplyModifiedProperties();
-		if (EditorGUI.EndChangeCheck())
-		{
-			EditorUtility.SetDirty(target);
-		}
-	}
+                        //Show size of the dictionary.
+                        EditorGUILayout.LabelField("Size", GUILayout.Height(20), GUILayout.Width(40), GUILayout.MaxWidth(40));
+                        //Add int field, so user can directly set number of element in dictionary.
+                        var size = EditorGUILayout.IntField(keys.arraySize, GUILayout.Width(40), GUILayout.MaxWidth(40));
+                        if (GUILayout.Button(style, GUILayout.Width(20)))
+                        {
+                            if (keys.arraySize == 0)
+                            {
+                                keys.arraySize = 1;
+                            }
+                            else
+                            {
+                                keys.InsertArrayElementAtIndex(keys.arraySize - 1);
+                                var key = keys.GetArrayElementAtIndex(keys.arraySize - 1);
+                                for (int i = 0; i < keys.arraySize - 1; i++)
+                                {
+                                    var k = keys.GetArrayElementAtIndex(i);
+                                    switch (key.propertyType)
+                                    {
+                                        case SerializedPropertyType.Integer:
+                                            if (k.intValue == key.intValue)
+                                            {
+                                                key.intValue = key.intValue + Random.Range(1, 5000);
+                                            }
+                                            break;
+                                        case SerializedPropertyType.Float:
+                                            if (k.floatValue == key.floatValue)
+                                            {
+                                                key.floatValue = key.floatValue + Random.Range(1, 5000);
+                                            }
+                                            break;
+                                        case SerializedPropertyType.String:
+                                            if (k.stringValue.Equals(key.stringValue))
+                                            {
+                                                key.stringValue = key.stringValue + Random.Range(1, 5000);
+                                            }
+                                            break;
+                                        default:
+                                            EditorGUILayout.LabelField("Unsupported key type or it is not serialized. If it is a custom class, please make it serializable using serializable attribute to show here");
+                                            break;
+                                    }
+                                }
+                            }
+                            values.arraySize = keys.arraySize;
+                            size = keys.arraySize;
+                        }
+                        EditorGUILayout.EndHorizontal();
+                        keys.arraySize = size;
+                        values.arraySize = size;
+                        //Here, I have checked if keys already contains the same key or not. because dictonary can't have same key multiple times,
+                        //It can break our login at runtime. Better approch is appriciated.
+                        for (int i = 0; i < keys.arraySize - 1; i++)
+                        {
+                            var key = keys.GetArrayElementAtIndex(i);
+                            for (int j = 0; j < keys.arraySize; j++)
+                            {
+                                if (j == i)
+                                    continue;
+                                var k = keys.GetArrayElementAtIndex(j);
+                                switch (key.propertyType)
+                                {
+                                    case SerializedPropertyType.Integer:
+                                        if (k.intValue == key.intValue)
+                                        {
+                                            key.intValue = key.intValue + Random.Range(1, 5000);
+                                        }
+                                        break;
+                                    case SerializedPropertyType.Float:
+                                        if (k.floatValue == key.floatValue)
+                                        {
+                                            key.floatValue = key.floatValue + Random.Range(1, 5000);
+                                        }
+                                        break;
+                                    case SerializedPropertyType.String:
+                                        if (k.stringValue.Equals(key.stringValue))
+                                        {
+                                            key.stringValue = key.stringValue + Random.Range(1, 5000);
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                        EditorGUILayout.Space(5);
+                        //Show dictionary items if foldout is expanded.
+                        if (isShowing)
+                        {
+                            //EditorGUI.indentLevel++;
+                            values.arraySize = keys.arraySize;
+                            if (keys.arraySize > 0)
+                            {
+                                for (int i = 0; i < keys.arraySize; i++)
+                                {
+                                    var rect = GUILayoutUtility.GetLastRect();
+                                    rect.y += 5;
+                                    rect.x -= 2;
+                                    rect.width = EditorGUIUtility.currentViewWidth - 30;
+                                    rect.height = 1;
+                                    EditorGUI.DrawRect(rect, Color.green);
+                                    GUILayout.Space(5);
+                                    //var rect = new Rect(0, GUILayoutUtility.GetLastRect().y,0, 20);
+                                    EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 50));
+                                    var key = keys.GetArrayElementAtIndex(i);
+                                    var value = values.GetArrayElementAtIndex(i);
+                                    var width = ((EditorGUIUtility.currentViewWidth - 40) / 2f);
+                                    //rect.width = width * 2f;
+                                    //EditorGUI.DrawRect(rect,Color.cyan);
+                                    //Check key property type and show Editor field for it. If it differs from any of these types then we will try
+                                    //to show it as property field.
+                                    switch (key.propertyType)
+                                    {
+                                        case SerializedPropertyType.Integer:
+                                            EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
+                                            key.intValue = EditorGUILayout.IntField(key.intValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        case SerializedPropertyType.Float:
+                                            EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
+                                            key.floatValue = EditorGUILayout.FloatField(key.floatValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        case SerializedPropertyType.String:
+                                            EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
+                                            key.stringValue = EditorGUILayout.TextField(key.stringValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        default:
+                                            EditorGUILayout.LabelField("Key", GUILayout.Height(20), GUILayout.Width(50));
+                                            EditorGUILayout.PropertyField(key, GUILayout.MaxWidth(width * 2 - 50));
+                                            break;
+                                    }
+                                    if (GUILayout.Button("X", GUILayout.Width(30), GUILayout.MaxWidth(20), GUILayout.Height(20)))
+                                    {
+                                        keys.DeleteArrayElementAtIndex(i);
+                                        values.DeleteArrayElementAtIndex(i);
+                                    }
+                                    EditorGUILayout.EndHorizontal();
+                                    EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 20));
+                                    switch (value.propertyType)
+                                    {
+                                        case SerializedPropertyType.Integer:
+                                            EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
+                                            value.intValue = EditorGUILayout.IntField(value.intValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        case SerializedPropertyType.Float:
+                                            EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
+                                            value.floatValue = EditorGUILayout.FloatField(value.floatValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        case SerializedPropertyType.String:
+                                            EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
+                                            value.stringValue = EditorGUILayout.TextField(value.stringValue, GUILayout.Height(20), GUILayout.MaxWidth(width - 50));
+                                            break;
+                                        default:
+                                            EditorGUILayout.LabelField("Value", GUILayout.Height(20), GUILayout.Width(50));
+                                            EditorGUILayout.PropertyField(value, GUILayout.MaxWidth(width * 2 - 50));
+                                            break;
+                                    }
+                                    EditorGUILayout.EndHorizontal();
+                                    //Create border line
+                                    var rect1 = GUILayoutUtility.GetLastRect();
+                                    rect1.x -= 2;
+                                    rect1.width = 1;
+                                    rect1.height += rect1.y - rect.y + 6;
+                                    rect1.y = rect.y;
+                                    EditorGUI.DrawRect(rect1, Color.green);
+                                    rect1.x = EditorGUIUtility.currentViewWidth - 15;
+                                    EditorGUI.DrawRect(rect1, Color.green);
+                                    GUILayout.Space(10);
+                                    rect = GUILayoutUtility.GetLastRect();
+                                    rect.x -= 2;
+                                    rect.y += 5;
+                                    rect.width = EditorGUIUtility.currentViewWidth - 30;
+                                    rect.height = 1;
+                                    EditorGUI.DrawRect(rect, Color.green);
+                                    //End border line
+                                }
+                            }
+                            //EditorGUI.indentLevel--;
+                        }
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.PropertyField(serialized, true);
+                }
+            }
+            while (serialized.NextVisible(false));
+        }
+        serializedObject.ApplyModifiedProperties();
+        if (EditorGUI.EndChangeCheck())
+        {
+            EditorUtility.SetDirty(target);
+        }
+    }
+
+    /// <summary>
+    /// Function to make variable name formatted. There might be an easy approch to achieve this. You may tweak this to make it more performant.
+    /// </summary>
+    /// <param name="n">Name of the variable</param>
+    /// <returns>Return name with formatting for ex. n = myVar return value will be My Var</returns>
+    public string GetNameFormatted(string n)
+    {
+        n = n.Replace(n[0], n[0].ToString().ToUpper()[0]);
+        var s = n;
+        int spaceAdded = 0;
+        for (int i = 1; i < n.Length; i++)
+        {
+            if (char.IsUpper(n[i]))
+            {
+                s = s.Insert(i + spaceAdded, " ");
+                spaceAdded++;
+            }
+        }
+        return s;
+    }
 }
