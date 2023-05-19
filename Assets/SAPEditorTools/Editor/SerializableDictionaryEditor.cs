@@ -39,7 +39,6 @@ public class SerializableDictionaryEditor : Editor
                         var values = serialized.FindPropertyRelative("values");
                         EditorGUILayout.BeginHorizontal();
                        
-                        var serializableDictionary = serializedObject.FindProperty(serialized.name);
                         SerializableDictionaryProperty p = new SerializableDictionaryProperty("#00FF00");
                         var attribute = PropertyHasAttribute<SerializableDictionaryProperty>(serialized, ref p);
                         boxColor = p.boxColor;
