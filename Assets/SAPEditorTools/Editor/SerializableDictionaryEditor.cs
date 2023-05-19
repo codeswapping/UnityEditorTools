@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+
 [CustomEditor(typeof(SerializableMonoBehaviour), true)]
 public class SerializableDictionaryEditor : Editor
 {
 	bool isShowing = true;
 	public override void OnInspectorGUI()
 	{
+		Debug.Log("Checking editor");
 		serializedObject.Update();
 		EditorGUI.BeginChangeCheck();
 		var serialized = serializedObject.GetIterator();
@@ -126,7 +128,7 @@ public class SerializableDictionaryEditor : Editor
 									rect.x -= 2;
 									rect.width = EditorGUIUtility.currentViewWidth - 30;
 									rect.height = 1;
-									EditorGUI.DrawRect(rect, Color.cyan);
+									EditorGUI.DrawRect(rect, Color.green);
 									GUILayout.Space(5);
 									//var rect = new Rect(0, GUILayoutUtility.GetLastRect().y,0, 20);
 									EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 50));
@@ -186,16 +188,16 @@ public class SerializableDictionaryEditor : Editor
 									rect1.width = 1;
 									rect1.height += rect1.y - rect.y + 6;
 									rect1.y = rect.y;
-									EditorGUI.DrawRect(rect1, Color.cyan);
+									EditorGUI.DrawRect(rect1, Color.green);
 									rect1.x = EditorGUIUtility.currentViewWidth - 15;
-									EditorGUI.DrawRect(rect1, Color.cyan);
+									EditorGUI.DrawRect(rect1, Color.green);
 									GUILayout.Space(10);
 									rect = GUILayoutUtility.GetLastRect();
 									rect.x -= 2;
 									rect.y += 5;
 									rect.width = EditorGUIUtility.currentViewWidth - 30;
 									rect.height = 1;
-									EditorGUI.DrawRect(rect, Color.cyan);
+									EditorGUI.DrawRect(rect, Color.green);
 								}
 							}
 							//EditorGUI.indentLevel--;
