@@ -1,10 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class SerializableDictionary<TKey, TValue>
+public class SerializableDictionary<TKey, TValue> : ISerializedDictionary
 {
 	[SerializeField]
 	private List<TKey> keys = new List<TKey>();

@@ -1,13 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using SAPUnityEditorTools.Attributes;
 
-public class HorizontalLineDemo : MonoBehaviour
+public class HorizontalLineDemo : SerializableMonoBehaviour
 {
-    public int Speed;
     [HorizontalLine]
-    [CustomList]
-    public SAPUnityEditorTools.Tools.SAPList<int> allIndexes;
+    public int Speed;
     public int JumpSpeed;
+    [HorizontalLine]
+    public int score;
+
+    [HorizontalLine]
+    [SerializableDictionaryProperty("#732fff")]
+    public SerializableDictionary<string, Player> myPlayerDictonary;
+
+    public GameObject[,] gridObjects = new GameObject[10,10];
+}
+
+[System.Serializable]
+public class Player
+{
+    public int playerId;
+    public int playerHealth;
 }

@@ -16,7 +16,7 @@ namespace SAPUnityEditorTools.Editor
 
         public override float GetHeight()
         {
-            return base.GetHeight() + 10;
+            return base.GetHeight();
         }
     }
 }

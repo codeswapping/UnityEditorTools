@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Reflection;
+using System;
+using Random = UnityEngine.Random;
 
 [CustomEditor(typeof(SerializableMonoBehaviour), true)]
 public class SerializableDictionaryEditor : Editor
@@ -14,22 +17,31 @@ public class SerializableDictionaryEditor : Editor
         var serialized = serializedObject.GetIterator();
         if (serialized.NextVisible(true))
         {
+            var boxColor = Color.green;
             do
             {
                 if (serialized.propertyType == SerializedPropertyType.Generic)
                 {
                     //Check if serialized property is of SerializableDictionary type of not. Note: I did not find any other proper way to check what serialized
                     //property type is so I just compare it with string value. I need to find better way to achieve this.
-                    if (serialized.type.Contains("SerializableDictionary"))
+                    System.Type parentType = serialized.serializedObject.targetObject.GetType();
+                    System.Reflection.FieldInfo fi = parentType.GetField(serialized.propertyPath);
+                    var t = fi.GetValue(serialized.serializedObject.targetObject);
+                    if (t is ISerializedDictionary)
                     {
+                        var keys = serialized.FindPropertyRelative("keys");
+                        var values = serialized.FindPropertyRelative("values");
                         EditorGUILayout.BeginHorizontal();
-
+                       
+                        var serializableDictionary = serializedObject.FindProperty(serialized.name);
+                        SerializableDictionaryProperty p = new SerializableDictionaryProperty("#00FF00");
+                        var attribute = PropertyHasAttribute<SerializableDictionaryProperty>(serialized, ref p);
+                        boxColor = p.boxColor;
                         //Create foldout group
                         isShowing = EditorGUILayout.Foldout(isShowing, GetNameFormatted(serialized.name), true);
                         GUILayout.Space(5);
                         var style = new GUIContent("+", "Add new item in the dictionary");
-                        var keys = serialized.FindPropertyRelative("keys");
-                        var values = serialized.FindPropertyRelative("values");
+
                         //If keys or values are not an serializable then we can't show it in inspector, so we will simply show a message to user.
                         if (keys == null || values == null)
                         {
@@ -142,7 +154,7 @@ public class SerializableDictionaryEditor : Editor
                                     rect.x -= 2;
                                     rect.width = EditorGUIUtility.currentViewWidth - 30;
                                     rect.height = 1;
-                                    EditorGUI.DrawRect(rect, Color.green);
+                                    EditorGUI.DrawRect(rect, boxColor);
                                     GUILayout.Space(5);
                                     //var rect = new Rect(0, GUILayoutUtility.GetLastRect().y,0, 20);
                                     EditorGUILayout.BeginHorizontal(GUILayout.Width(EditorGUIUtility.currentViewWidth - 50));
@@ -205,16 +217,16 @@ public class SerializableDictionaryEditor : Editor
                                     rect1.width = 1;
                                     rect1.height += rect1.y - rect.y + 6;
                                     rect1.y = rect.y;
-                                    EditorGUI.DrawRect(rect1, Color.green);
+                                    EditorGUI.DrawRect(rect1, boxColor);
                                     rect1.x = EditorGUIUtility.currentViewWidth - 15;
-                                    EditorGUI.DrawRect(rect1, Color.green);
+                                    EditorGUI.DrawRect(rect1, boxColor);
                                     GUILayout.Space(10);
                                     rect = GUILayoutUtility.GetLastRect();
                                     rect.x -= 2;
                                     rect.y += 5;
                                     rect.width = EditorGUIUtility.currentViewWidth - 30;
                                     rect.height = 1;
-                                    EditorGUI.DrawRect(rect, Color.green);
+                                    EditorGUI.DrawRect(rect, boxColor);
                                     //End border line
                                 }
                             }
@@ -255,5 +267,32 @@ public class SerializableDictionaryEditor : Editor
             }
         }
         return s;
+    }
+
+    private bool PropertyHasAttribute<T>(SerializedProperty property, ref T val) where T : PropertyAttribute
+    {
+        System.Reflection.FieldInfo field = GetFieldFromProperty(property);
+        if (field != null)
+        {
+            val = (T)field.GetCustomAttribute(typeof(T), true);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private System.Reflection.FieldInfo GetFieldFromProperty(SerializedProperty property)
+    {
+        string[] path = property.propertyPath.Split('.');
+        System.Type type = serializedObject.targetObject.GetType();
+        System.Reflection.FieldInfo field = null;
+
+        foreach (string fieldName in path)
+        {
+            field = type.GetField(fieldName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+            type = field.FieldType;
+        }
+
+        return field;
     }
 }

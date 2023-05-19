@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028355, g: 0.22571374, b: 0.30692255, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028326, g: 0.22571333, b: 0.30692202, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -168,8 +168,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 0
-  allIndexes: 010000000300000005000000
   JumpSpeed: 0
+  score: 0
+  myPlayerDictonary:
+    keys:
+    - 1
+    - 23426
+    - 3
+    - 4
+    - 5
+    values:
+    - playerId: 1
+      playerHealth: 10
+    - playerId: 2
+      playerHealth: 12
+    - playerId: 3
+      playerHealth: 30
+    - playerId: 4
+      playerHealth: 26
+    - playerId: 5
+      playerHealth: 66
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
