@@ -12,7 +12,8 @@ public class HorizontalLineDemo : SerializableMonoBehaviour
     [HorizontalLine]
     [SerializableDictionaryProperty("#732fff")]
     public SerializableDictionary<string, Player> myPlayerDictonary;
-
+    [SerializableDictionaryProperty("#ff0000")]
+    public SerializableDictionary<int, Enemy> allEnemiesDictionary;
     public GameObject[,] gridObjects = new GameObject[10,10];
 }
 
@@ -21,4 +22,11 @@ public class Player
 {
     public int playerId;
     public int playerHealth;
+}
+
+[System.Serializable]
+public class Enemy
+{
+    public int enemyId;
+    public int enemyHealth;
 }

@@ -9,11 +9,12 @@ using Random = UnityEngine.Random;
 [CustomEditor(typeof(SerializableMonoBehaviour), true)]
 public class SerializableDictionaryEditor : Editor
 {
-    bool isShowing = true;
+    List<bool> isShowing = new List<bool>();
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
         EditorGUI.BeginChangeCheck();
+        int ind = 0;
         var serialized = serializedObject.GetIterator();
         if (serialized.NextVisible(true))
         {
@@ -22,6 +23,7 @@ public class SerializableDictionaryEditor : Editor
             {
                 if (serialized.propertyType == SerializedPropertyType.Generic)
                 {
+
                     //Check if serialized property is of SerializableDictionary type of not. Note: I did not find any other proper way to check what serialized
                     //property type is so I just compare it with string value. I need to find better way to achieve this.
                     System.Type parentType = serialized.serializedObject.targetObject.GetType();
@@ -29,6 +31,10 @@ public class SerializableDictionaryEditor : Editor
                     var t = fi.GetValue(serialized.serializedObject.targetObject);
                     if (t is ISerializedDictionary)
                     {
+                        if (isShowing.Count <= ind)
+                        {
+                            isShowing.Add(true);
+                        }
                         var keys = serialized.FindPropertyRelative("keys");
                         var values = serialized.FindPropertyRelative("values");
                         EditorGUILayout.BeginHorizontal();
@@ -38,7 +44,7 @@ public class SerializableDictionaryEditor : Editor
                         var attribute = PropertyHasAttribute<SerializableDictionaryProperty>(serialized, ref p);
                         boxColor = p.boxColor;
                         //Create foldout group
-                        isShowing = EditorGUILayout.Foldout(isShowing, GetNameFormatted(serialized.name), true);
+                        isShowing[ind] = EditorGUILayout.Foldout(isShowing[ind], GetNameFormatted(serialized.name), true);
                         GUILayout.Space(5);
                         var style = new GUIContent("+", "Add new item in the dictionary");
 
@@ -141,7 +147,7 @@ public class SerializableDictionaryEditor : Editor
                         }
                         EditorGUILayout.Space(5);
                         //Show dictionary items if foldout is expanded.
-                        if (isShowing)
+                        if (isShowing[ind])
                         {
                             //EditorGUI.indentLevel++;
                             values.arraySize = keys.arraySize;
@@ -232,6 +238,11 @@ public class SerializableDictionaryEditor : Editor
                             }
                             //EditorGUI.indentLevel--;
                         }
+                        ind++;
+                    }
+                    else
+                    {
+                        EditorGUILayout.PropertyField(serialized, true);
                     }
                 }
                 else

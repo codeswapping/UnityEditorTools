@@ -188,6 +188,15 @@ MonoBehaviour:
       playerHealth: 26
     - playerId: 5
       playerHealth: 66
+  allEnemiesDictionary:
+    keys: 8e120000b107000000000000
+    values:
+    - enemyId: 0
+      enemyHealth: 0
+    - enemyId: 0
+      enemyHealth: 0
+    - enemyId: 0
+      enemyHealth: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
