@@ -41,8 +41,10 @@ public class SerializableDictionaryEditor : Editor
                        
                         SerializableDictionaryProperty p = new SerializableDictionaryProperty("#00FF00");
                         var attribute = PropertyHasAttribute<SerializableDictionaryProperty>(serialized, ref p);
-                        boxColor = p.boxColor;
-                        //Create foldout group
+                        if (p == null)
+                        {
+                            boxColor = Color.green;
+                        }                        //Create foldout group
                         isShowing[ind] = EditorGUILayout.Foldout(isShowing[ind], GetNameFormatted(serialized.name), true);
                         GUILayout.Space(5);
                         var style = new GUIContent("+", "Add new item in the dictionary");
